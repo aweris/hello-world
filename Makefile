@@ -75,13 +75,8 @@ version: ## Shows application version
 	$(Q) echo $(VERSION)
 
 .PHONY: help
-help: ## Shows this help message
-	$(Q) echo 'usage: make [target] ...'
-	$(Q) echo
-	$(Q) echo 'targets : '
-	$(Q) echo
-	$(Q) fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'| column -s: -t
-	$(Q) echo
+help: ## shows this help message
+	$(Q) awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m\t %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
 $(BUILD_DIR): ; $(info $(M) creating build directory)
 	$(Q) $(shell mkdir -p $@)
