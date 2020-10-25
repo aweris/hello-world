@@ -1,6 +1,7 @@
 package logs
 
 import (
+	syslog "log"
 	"os"
 
 	"github.com/go-kit/kit/log"
@@ -21,7 +22,7 @@ const (
 	loggerDepth = 4
 )
 
-// Logger is a wrapper interface for leveled logging entries
+// Logger is a wrapper interface for leveled logging entries.
 type Logger interface {
 	Debug(keyvals ...interface{})
 	Info(keyvals ...interface{})
@@ -29,8 +30,9 @@ type Logger interface {
 	Error(keyvals ...interface{})
 }
 
-// logger simple wrapper object for log.Logger
+// logger simple wrapper object for log.Logger.
 type logger struct {
+	name   string
 	logger log.Logger
 }
 
@@ -66,25 +68,38 @@ func NewLogger(logLevel, logFormat, name string) Logger {
 	kitLogger = log.With(kitLogger, "name", name)
 	kitLogger = log.With(kitLogger, "ts", log.DefaultTimestampUTC, "caller", log.Caller(loggerDepth))
 
-	return &logger{kitLogger}
+	return &logger{name: name, logger: kitLogger}
 }
 
-// Debug is a wrapper for level.Debug(logs).Log(keyvals)
+// Debug is a wrapper for level.Debug(logs).Log(keyvals).
 func (l *logger) Debug(keyvals ...interface{}) {
-	level.Debug(l.logger).Log(keyvals...)
+	if err := level.Debug(l.logger).Log(keyvals...); err != nil {
+		fallbackLogger(err, l.name, LogLevelDebug, keyvals)
+	}
 }
 
-// Info is a wrapper for level.Info(logs).Log(keyvals)
+// Info is a wrapper for level.Info(logs).Log(keyvals).
 func (l *logger) Info(keyvals ...interface{}) {
-	level.Info(l.logger).Log(keyvals...)
+	if err := level.Info(l.logger).Log(keyvals...); err != nil {
+		fallbackLogger(err, l.name, LogLevelInfo, keyvals)
+	}
 }
 
-// Warn is a wrapper for level.Warn(logs).Log(keyvals)
+// Warn is a wrapper for level.Warn(logs).Log(keyvals).
 func (l *logger) Warn(keyvals ...interface{}) {
-	level.Warn(l.logger).Log(keyvals...)
+	if err := level.Warn(l.logger).Log(keyvals...); err != nil {
+		fallbackLogger(err, l.name, LogLevelWarn, keyvals)
+	}
 }
 
-// Error is a wrapper for level.Error(logs).Log(keyvals)
+// Error is a wrapper for level.Error(logs).Log(keyvals).
 func (l *logger) Error(keyvals ...interface{}) {
-	level.Error(l.logger).Log(keyvals...)
+	if err := level.Error(l.logger).Log(keyvals...); err != nil {
+		fallbackLogger(err, l.name, LogLevelError, keyvals)
+	}
+}
+
+// fallbackLogger is a fallback syslog logger, in case of actual logger failures.
+func fallbackLogger(err error, name string, level string, keyvals ...interface{}) {
+	syslog.Printf("[fallback: %s] log: %v, level: %s, err: %v", name, keyvals, level, err)
 }
