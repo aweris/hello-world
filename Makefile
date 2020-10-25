@@ -1,18 +1,15 @@
+# External targets
+include .bingo/Variables.mk
+
 # Project directories
 ROOT_DIR        := $(CURDIR)
 BUILD_DIR       := $(ROOT_DIR)/build
-
-# Ensure everything works even if GOPATH is not set, which is often the case.
-GOPATH          ?= $(shell go env GOPATH)
-
-# Set $(GOBIN) to project directory for keeping everything in one place
-GOBIN            = $(ROOT_DIR)/bin
 
 # All go files belong to project
 GOFILES          = $(shell find . -type f -name '*.go' -not -path './vendor/*')
 
 # Commands used in Makefile
-GOCMD           := GOBIN=$(GOBIN) go
+GOCMD           := go
 GOBUILD         := $(GOCMD) build
 GOTEST          := $(GOCMD) test
 GOMOD           := $(GOCMD) mod
@@ -20,7 +17,6 @@ GOINSTALL       := $(GOCMD) install
 GOCLEAN         := $(GOCMD) clean
 GOFMT           := gofmt
 
-GOLANGCILINT    := $(GOBIN)/golangci-lint
 
 MODULE          := $(shell $(GOCMD) list -m)
 VERSION         := $(strip $(shell [ -d .git ] && git describe --always --tags --dirty))
@@ -49,9 +45,9 @@ vendor: ; $(info $(M) running go mod vendor)
 	$(Q) $(GOMOD) vendor
 
 .PHONY: fix
-fix: ## Fix found issues (if it's supported by the $(GOLANGCILINT))
-fix: install-tools ; $(info $(M) runing golangci-lint run --fix)
-	$(Q) $(GOLANGCILINT) run --fix --enable-all -c .golangci.yml
+fix: ## Fix found issues (if it's supported by the $(GOLANGCI_LINT))
+fix: ; $(info $(M) runing golangci-lint run --fix)
+	$(Q) $(GOLANGCI_LINT) run --fix --enable-all -c .golangci.yml
 
 .PHONY: fmt
 fmt: ## Runs gofmt
@@ -60,8 +56,8 @@ fmt: ; $(info $(M) runnig gofmt )
 
 .PHONY: lint
 lint: ## Runs golangci-lint analysis
-lint: install-tools vendor fmt ; $(info $(M) runnig golangci-lint analysis)
-	$(Q) $(GOLANGCILINT) run
+lint: vendor fmt ; $(info $(M) runnig golangci-lint analysis)
+	$(Q) $(GOLANGCI_LINT) run
 
 .PHONY: clean
 clean: ## Cleanup everything
@@ -77,11 +73,6 @@ test: ; $(info $(M) runnig tests)
 .PHONY: version
 version: ## Shows application version
 	$(Q) echo $(VERSION)
-
-.PHONY: install-tools
-install-tools: ## Install tools
-install-tools: vendor ; $(info $(M) installing tools)
-	$(Q) $(GOINSTALL) $(shell cat tools.go | grep _ | awk -F'"' '{print $$2}')
 
 .PHONY: help
 help: ## Shows this help message
