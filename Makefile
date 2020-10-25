@@ -29,7 +29,7 @@ VERSION         := $(strip $(shell [ -d .git ] && git describe --always --tags -
 BUILD_TIMESTAMP := $(shell date -u +"%Y-%m-%dT%H:%M:%S%Z")
 BUILD_LDFLAGS   := '-s -w -X "$(MODULE)/version.Version=$(VERSION)" -X "$(MODULE)/version.BuildDate=$(BUILD_TIMESTAMP)"'
 
-# Helper variabless
+# Helper variables
 V = 0
 Q = $(if $(filter 1,$V),,@)
 M = $(shell printf "\033[34;1m▶\033[0m")
