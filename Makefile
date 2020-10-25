@@ -1,13 +1,11 @@
-# External targets
-include .bingo/Variables.mk
-include scripts/make/help.mk
-
 # Project directories
 ROOT_DIR        := $(CURDIR)
 BUILD_DIR       := $(ROOT_DIR)/build
 
-# All go files belong to project
-GOFILES          = $(shell find . -type f -name '*.go' -not -path './vendor/*')
+# External targets
+include .bingo/Variables.mk
+include scripts/make/help.mk
+include scripts/make/lint.mk
 
 # Commands used in Makefile
 GOCMD           := go
@@ -16,7 +14,7 @@ GOTEST          := $(GOCMD) test
 GOMOD           := $(GOCMD) mod
 GOINSTALL       := $(GOCMD) install
 GOCLEAN         := $(GOCMD) clean
-GOFMT           := gofmt
+
 
 
 MODULE          := $(shell $(GOCMD) list -m)
@@ -41,21 +39,6 @@ vendor: ## Updates vendored copy of dependencies
 vendor: ; $(info $(M) running go mod vendor)
 	$(Q) $(GOMOD) tidy
 	$(Q) $(GOMOD) vendor
-
-.PHONY: fix
-fix: ## Fix found issues (if it's supported by the $(GOLANGCI_LINT))
-fix: ; $(info $(M) runing golangci-lint run --fix)
-	$(Q) $(GOLANGCI_LINT) run --fix --enable-all -c .golangci.yml
-
-.PHONY: fmt
-fmt: ## Runs gofmt
-fmt: ; $(info $(M) runnig gofmt )
-	$(Q) $(GOFMT) -d -s $(GOFILES)
-
-.PHONY: lint
-lint: ## Runs golangci-lint analysis
-lint: vendor fmt ; $(info $(M) runnig golangci-lint analysis)
-	$(Q) $(GOLANGCI_LINT) run
 
 .PHONY: clean
 clean: ## Cleanup everything
