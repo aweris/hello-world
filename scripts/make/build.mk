@@ -10,8 +10,9 @@ GOCLEAN         := go clean
 # Variables
 MODULE          := $(shell go list -m)
 VERSION         := $(strip $(shell [ -d .git ] && git describe --always --tags --dirty))
+VCS_REF         := $(strip $(shell [ -d .git ] && git rev-parse HEAD))
 BUILD_TIMESTAMP := $(shell date -u +"%Y-%m-%dT%H:%M:%S%Z")
-BUILD_LDFLAGS   := '-s -w -X "$(MODULE)/version.Version=$(VERSION)" -X "$(MODULE)/version.BuildDate=$(BUILD_TIMESTAMP)"'
+BUILD_LDFLAGS   := '-s -w -X "$(MODULE)/version.Version=$(VERSION)" -X "$(MODULE)/version.Commit=$(VCS_REF)" -X "$(MODULE)/version.Date=$(BUILD_TIMESTAMP)"'
 
 .PHONY: clean
 clean: ## Cleanup everything

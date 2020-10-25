@@ -8,5 +8,7 @@ import (
 func main() {
 	logger := logs.NewLogger("debug", "fmt", "hello-world")
 
-	logger.Debug("msg", "Hello World", "version", version.Version, "BuildDate", version.BuildDate)
+	version.PrintVersion()
+
+	logger.Debug("msg", "Hello World")
 }
