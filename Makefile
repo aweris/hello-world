@@ -1,5 +1,6 @@
 # External targets
 include .bingo/Variables.mk
+include scripts/make/help.mk
 
 # Project directories
 ROOT_DIR        := $(CURDIR)
@@ -29,9 +30,6 @@ BUILD_LDFLAGS   := '-s -w -X "$(MODULE)/version.Version=$(VERSION)" -X "$(MODULE
 V = 0
 Q = $(if $(filter 1,$V),,@)
 M = $(shell printf "\033[34;1m▶\033[0m")
-
-.PHONY: help
-default: help
 
 .PHONY: hello-world
 hello-world: ## Builds hello-world binary
@@ -73,10 +71,6 @@ test: ; $(info $(M) runnig tests)
 .PHONY: version
 version: ## Shows application version
 	$(Q) echo $(VERSION)
-
-.PHONY: help
-help: ## shows this help message
-	$(Q) awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m\t %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
 $(BUILD_DIR): ; $(info $(M) creating build directory)
 	$(Q) $(shell mkdir -p $@)
